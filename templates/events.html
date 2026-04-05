@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Events — TicketHub{% endblock %}
+
+{% block content %}
+<h2>Upcoming Events</h2>
+
+{% if not events %}
+  <p>No events available right now.</p>
+{% else %}
+  <div class="grid">
+    {% for e in events %}
+    <div class="card event-card">
+      <h3>{{ e.name }}</h3>
+      <p>📍 {{ e.location }}</p>
+      <p>📅 {{ e.date.strftime('%d %b %Y, %I:%M %p') }}</p>
+      <p class="price">₹{{ "%.2f"|format(e.price) }} / ticket</p>
+      <a href="{{ url_for('book', event_id=e.event_id) }}" class="btn">Book Now</a>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Welcome — TicketHub{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <h1>Event Ticket Booking</h1>
+  <p class="sub">Book seats for upcoming events in seconds.</p>
+
+  <div class="tabs">
+    <button onclick="show('login')" id="tab-login" class="tab active">Login</button>
+    <button onclick="show('register')" id="tab-register" class="tab">Register</button>
+  </div>
+
+  <!-- Login -->
+  <form method="POST" id="login" class="card">
+    <input type="hidden" name="action" value="login" />
+    <label>Email</label>
+    <input type="email" name="email" required placeholder="you@example.com" />
+    <button type="submit" class="btn">Login</button>
+  </form>
+
+  <!-- Register -->
+
+  <form method="POST">
+
+    <input type="text" name="name" placeholder="Enter your name">
+
+    <input type="email" name="email" placeholder="Enter your email">
+
+    <input type="text" name="phone" placeholder="Enter phone">
+
+    <input type="hidden" name="action" value="register">
+
+    <button type="submit">Register</button>
+
+  </form>
+</div>
+
+<script>
+  function show(tab) {
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('register').classList.add('hidden');
+    document.getElementById('tab-login').classList.remove('active');
+    document.getElementById('tab-register').classList.remove('active');
+    document.getElementById(tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+</script>
+{% endblock %}

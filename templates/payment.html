@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Payment — TicketHub{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+  <h2>Payment</h2>
+
+  <div class="card summary">
+    <p><strong>Event:</strong> {{ booking.event_name }}</p>
+    <p><strong>Date:</strong> {{ booking.event_date.strftime('%d %b %Y, %I:%M %p') }}</p>
+    <p><strong>Tickets:</strong> {{ booking.tickets }}</p>
+    <p><strong>Amount Due:</strong> ₹{{ "%.2f"|format(total) }}</p>
+  </div>
+
+  {% if existing and existing.status == 'completed' %}
+    <div class="alert success">This booking is already paid.</div>
+    <a href="{{ url_for('my_bookings') }}" class="btn">View My Bookings</a>
+  {% else %}
+    <form method="POST" class="card">
+      <label>Payment Method</label>
+      <select name="method">
+        <option value="upi">UPI</option>
+        <option value="card">Credit / Debit Card</option>
+        <option value="netbanking">Net Banking</option>
+        <option value="wallet">Wallet</option>
+      </select>
+      <button type="submit" class="btn">Pay ₹{{ "%.2f"|format(total) }}</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

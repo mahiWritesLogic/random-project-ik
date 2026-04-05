@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Book — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+  <a href="{{ url_for('events') }}" class="back">← Back to Events</a>
+  <h2>{{ event.name }}</h2>
+  <p>📍 {{ event.location }} &nbsp;|&nbsp; 📅 {{ event.date.strftime('%d %b %Y, %I:%M %p') }}</p>
+  <p class="price">₹{{ "%.2f"|format(event.price) }} per ticket</p>
+
+  <form method="POST" class="card">
+    <label>Number of Tickets</label>
+    <input type="number" name="tickets" min="1" max="10" value="1" required/>
+
+    <div id="total-display" class="total-preview">Total: ₹{{ "%.2f"|format(event.price) }}</div>
+
+    <button type="submit" class="btn">Proceed to Payment</button>
+  </form>
+</div>
+
+<script>
+  const price = {{ event.price }};
+  const input = document.querySelector('input[name="tickets"]');
+  const display = document.getElementById('total-display');
+  input.addEventListener('input', () => {
+    const total = (price * (parseInt(input.value) || 1)).toFixed(2);
+    display.textContent = 'Total: ₹' + total;
+  });
+</script>
+{% endblock %}
