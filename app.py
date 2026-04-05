@@ -84,15 +84,20 @@ def book(event_id):
     if request.method == "POST":
         tickets = int(request.form.get("tickets", 1))
 
-    if tickets < 1:
-        flash("Select at least 1 ticket.", "error")
-        return redirect(url_for("book", event_id=event_id))
+        if tickets < 1:
+            flash("Select at least 1 ticket.", "error")
+            return redirect(url_for("book", event_id=event_id))
 
-    user_id = session.get("user_id")   # ✅ THIS LINE
+        user_id = session.get("user_id")
+        user = models.get_user(user_id)
+        if not user:
+            flash("User session invalid. Please login again.", "error")
+            session.clear()
+            return redirect(url_for("index"))
 
-    booking_id = models.create_booking(user_id, event_id, tickets)   # ✅ FIXED
+        booking_id = models.create_booking(user_id, event_id, tickets)
 
-    return redirect(url_for("payment", booking_id=booking_id))
+        return redirect(url_for("payment", booking_id=booking_id))
 
     return render_template("book.html", event=event)
 
@@ -104,8 +109,15 @@ def payment(booking_id):
     if not logged_in():
         return redirect(url_for("index"))
 
+    user_id = session.get("user_id")
+    user = models.get_user(user_id)
+    if not user:
+        flash("User session invalid. Please login again.", "error")
+        session.clear()
+        return redirect(url_for("index"))
+
     booking = models.get_booking(booking_id)
-    if not booking or booking["user_id"] != session["user_id"]:
+    if not booking or booking["user_id"] != user_id: 
         flash("Booking not found.", "error")
         return redirect(url_for("my_bookings"))
 
@@ -129,7 +141,15 @@ def payment(booking_id):
 def my_bookings():
     if not logged_in():
         return redirect(url_for("index"))
-    bookings = models.get_bookings_by_user(session["user_id"])
+    
+    user_id = session.get("user_id")
+    user = models.get_user(user_id)
+    if not user:
+        flash("User session invalid. Please login again.", "error")
+        session.clear()
+        return redirect(url_for("index"))
+    
+    bookings = models.get_booking_by_user(user_id)
     return render_template("bookings.html", bookings=bookings)
 
 

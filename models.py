@@ -14,7 +14,7 @@ def get_conn():
         host=os.getenv("DB_HOST", "localhost"),
         user=os.getenv("DB_USER", "root"),
         password=os.getenv("DB_PASSWORD", ""),
-        database="ticket_system"
+        database=os.getenv("DB_NAME", "ticket_booking")
     )
 
 
@@ -22,14 +22,14 @@ def get_conn():
 
 def get_user_by_email(email):
     conn = get_conn(); cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM user WHERE email = %s", (email,))
+    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
     row = cur.fetchone(); cur.close(); conn.close()
     return row
 
 def create_user(name, email, phone):
     conn = get_conn(); cur = conn.cursor()
     cur.execute(
-        "INSERT INTO user (name, email, phone) VALUES (%s, %s, %s)",
+        "INSERT INTO users (name, email, phone) VALUES (%s, %s, %s)",
         (name, email, phone),
     )
     uid = cur.lastrowid; conn.commit(); cur.close(); conn.close()
@@ -37,7 +37,7 @@ def create_user(name, email, phone):
 
 def get_user(user_id):
     conn = get_conn(); cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM user WHERE user_id = %s", (user_id,))
+    cur.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
     row = cur.fetchone(); cur.close(); conn.close()
     return row
 
@@ -46,13 +46,13 @@ def get_user(user_id):
 
 def get_all_events():
     conn = get_conn(); cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM event ORDER BY date ASC")
+    cur.execute("SELECT * FROM events ORDER BY date ASC")
     rows = cur.fetchall(); cur.close(); conn.close()
     return rows
 
 def get_event(event_id):
     conn = get_conn(); cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM event WHERE event_id = %s", (event_id,))
+    cur.execute("SELECT * FROM events WHERE event_id = %s", (event_id,))
     row = cur.fetchone(); cur.close(); conn.close()
     return row
 
@@ -64,7 +64,7 @@ def create_booking(user_id, event_id, number_of_tickets):
     cur = conn.cursor()
 
     cur.execute(
-        "INSERT INTO booking (user_id, event_id, number_of_tickets) VALUES (%s, %s, %s)",
+        "INSERT INTO bookings (user_id, event_id, tickets) VALUES (%s, %s, %s)",
         (user_id, event_id, number_of_tickets)
     )
 
@@ -80,9 +80,9 @@ def get_booking(booking_id):
     cur.execute("""
         SELECT b.*, e.name AS event_name, e.location, e.date AS event_date,
                e.price, u.name AS user_name, u.email
-        FROM   booking b
-        JOIN   event   e ON e.event_id  = b.event_id
-        JOIN   user    u ON u.user_id   = b.user_id
+        FROM   bookings b
+        JOIN   events   e ON e.event_id  = b.event_id
+        JOIN   users    u ON u.user_id   = b.user_id
         WHERE  b.booking_id = %s
     """, (booking_id,))
     row = cur.fetchone(); cur.close(); conn.close()
@@ -93,9 +93,9 @@ def get_booking_by_user(user_id):
     cur.execute("""
         SELECT b.*, e.name AS event_name, e.location, e.date AS event_date,
                e.price, p.status AS pay_status, p.method AS pay_method
-        FROM   booking b
-        JOIN   event   e ON e.event_id  = b.event_id
-        LEFT JOIN payment p ON p.booking_id = b.booking_id
+        FROM   bookings b
+        JOIN   events   e ON e.event_id  = b.event_id
+        LEFT JOIN payments p ON p.booking_id = b.booking_id
         WHERE  b.user_id = %s
         ORDER  BY b.date DESC
     """, (user_id,))
@@ -108,7 +108,7 @@ def get_booking_by_user(user_id):
 def create_payment(booking_id, method):
     conn = get_conn(); cur = conn.cursor()
     cur.execute(
-        "INSERT INTO payment (booking_id, method, status) VALUES (%s, %s, 'pending')",
+        "INSERT INTO payments (booking_id, method, status) VALUES (%s, %s, 'pending')",
         (booking_id, method),
     )
     pid = cur.lastrowid; conn.commit(); cur.close(); conn.close()
@@ -117,13 +117,13 @@ def create_payment(booking_id, method):
 def complete_payment(booking_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute(
-        "UPDATE payment SET status = 'completed' WHERE booking_id = %s",
+        "UPDATE payments SET status = 'completed' WHERE booking_id = %s",
         (booking_id,),
     )
     conn.commit(); cur.close(); conn.close()
 
 def get_payment(booking_id):
     conn = get_conn(); cur = conn.cursor(dictionary=True)
-    cur.execute("SELECT * FROM payment WHERE booking_id = %s", (booking_id,))
+    cur.execute("SELECT * FROM payments WHERE booking_id = %s", (booking_id,))
     row = cur.fetchone(); cur.close(); conn.close()
     return row
